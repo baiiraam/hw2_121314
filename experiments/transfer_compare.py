@@ -5,9 +5,10 @@ Saves best model for B3 (model persistence).
 Uses smart fallback for SmallCNN history.
 """
 import os
-
+import time
 import torch
 from torch import nn
+from loguru import logger
 
 from src.data import get_cifar10_subset, make_loaders, set_seed
 from src.engine import evaluate, fit
@@ -23,16 +24,17 @@ from src.utils import (
 
 def train_resnet(mode, train_loader, val_loader, test_loader, num_classes, device):
     """Train ResNet-18 in specified mode and return history and test accuracy."""
-    print(f"\n=== Training ResNet-18 ({mode}) ===")
+    logger.info(f"\n=== Training ResNet-18 ({mode}) ===")
 
     model = build_resnet18(num_classes=num_classes, mode=mode)
     model = model.to(device)
 
     trainable = count_trainable_params(model)
-    print(f"Trainable params: {trainable}")
+    logger.info(f"Trainable params: {trainable:,}")
 
     # Smaller LR for fine-tuning (Problem 6b)
     lr = 1e-4 if mode == "finetune" else 1e-3
+    logger.debug(f"Using learning rate: {lr}")
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
 
@@ -43,7 +45,7 @@ def train_resnet(mode, train_loader, val_loader, test_loader, num_classes, devic
 
     test_metrics = evaluate(model, test_loader, loss_fn, device)
     test_acc = test_metrics["acc"]
-    print(f"Test Accuracy: {test_acc:.4f}")
+    logger.success(f"Test Accuracy: {test_acc:.4f}")
 
     return history, test_acc, model
 
@@ -56,13 +58,14 @@ def get_resnet_history(mode, train_func):
     model_path = f"models/{mode}_model.pth"
 
     if history_exists(history_path) and os.path.exists(model_path):
-        print(f"📂 {mode} history found. Loading...")
+        logger.info(f"📂 {mode} history found. Loading...")
         return load_history(history_path), None
     else:
-        print(f"🔨 {mode} history not found. Training from scratch...")
+        logger.warning(f"🔨 {mode} history not found. Training from scratch...")
         history, _test_acc, model = train_func()
         save_history(history, history_path)
         torch.save(model.state_dict(), model_path)
+        logger.success(f"Saved {mode} model to {model_path}")
         return history, model
 
 
@@ -74,26 +77,35 @@ def get_smallcnn_history():
     history_path = "models/smallcnn_history.csv"
 
     if history_exists(history_path):
-        print("📂 SmallCNN history found. Loading...")
+        logger.info("📂 SmallCNN history found. Loading...")
         return load_history(history_path)
     else:
-        print("🔨 SmallCNN history not found. Training from scratch...")
+        logger.warning("🔨 SmallCNN history not found. Training from scratch...")
         from experiments.train_cnn import train_smallcnn
         return train_smallcnn()
 
 
 def main():
+    logger.info("=" * 50)
+    logger.info("B2: Transfer Learning Comparison")
+    logger.info("=" * 50)
+
+    start_time = time.time()
+
     STUDENT_ID = 121314
     set_seed(STUDENT_ID)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     classes = [0, 1, 2, 3, 4]
     batch_size = 64
     num_classes = len(classes)
 
+    logger.debug(f"Classes: {classes}, batch_size={batch_size}")
+
     # Load data (ResNet: 224x224, ImageNet normalization)
+    logger.info("Loading CIFAR-10 subset (224x224, ImageNet norm)...")
     train_ds, val_ds, test_ds = get_cifar10_subset(
         root="./data",
         classes=classes,
@@ -136,11 +148,12 @@ def main():
     # === Save best model for B3 ===
     if model_ft is not None:
         torch.save(model_ft.state_dict(), "models/best_resnet_ft.pth")
-        print("✅ Best model saved to models/best_resnet_ft.pth")
+        logger.success("Best model saved to models/best_resnet_ft.pth")
     else:
-        # If model_ft was loaded from checkpoint, we need to recreate it
-        # (In practice, this is handled by augment_compare loading from file)
-        print("ℹ️  Model loaded from checkpoint - best model file should already exist")
+        logger.info("ℹ️  Model loaded from checkpoint - best model file should already exist")
+
+    elapsed = time.time() - start_time
+    logger.info(f"B2 completed in {elapsed:.1f}s ({elapsed/60:.1f}m)")
 
 
 if __name__ == "__main__":

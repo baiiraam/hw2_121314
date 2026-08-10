@@ -1,12 +1,10 @@
-# =====================================================================
-# FILE: src/augment.py
-# =====================================================================
 """
 Custom implementations of Mixup and CutMix augmentation.
 No external libraries used - self-implemented per assignment rules.
 """
 import numpy as np
 import torch
+from loguru import logger
 
 
 def mixup_batch(x, y, alpha: float = 1.0):
@@ -24,16 +22,15 @@ def mixup_batch(x, y, alpha: float = 1.0):
         y_b: (N,) second set of labels
         lam: scalar mixing coefficient
     """
-    # Sample lambda from Beta(alpha, alpha)
-    lam = np.random.beta(alpha, alpha)
+    logger.debug(f"Applying Mixup with alpha={alpha}")
 
+    lam = np.random.beta(alpha, alpha)
     batch_size = x.size(0)
-    # Randomly shuffle the batch for pairing
     idx = torch.randperm(batch_size)
 
-    # Mix images: linear combination
     x_mixed = lam * x + (1 - lam) * x[idx]
 
+    logger.debug(f"Mixup: lam={lam:.4f}, batch_size={batch_size}")
     return x_mixed, y, y[idx], lam
 
 
@@ -55,16 +52,12 @@ def cutmix_batch(x, y, alpha: float = 1.0):
     Note: Uses clipped box dimensions to avoid np.random.randint edge cases.
     """
     batch_size, _, H, W = x.size()
+    logger.debug(f"Applying CutMix with alpha={alpha}, H={H}, W={W}")
 
-    # Sample lambda from Beta (controls box size)
     lam = np.random.beta(alpha, alpha)
-
-    # Randomly shuffle for patch pairing
     idx = torch.randperm(batch_size)
 
     # Calculate box dimensions with guard against edge cases
-    # box_w = int(W * sqrt(1 - lam))
-    # Clamp to [1, W-1] to avoid np.random.randint crashing when low == high
     box_w = int(W * np.sqrt(1 - lam))
     box_w = min(W - 1, max(1, box_w))
 
@@ -75,13 +68,13 @@ def cutmix_batch(x, y, alpha: float = 1.0):
     cx = np.random.randint(0, W - box_w + 1)
     cy = np.random.randint(0, H - box_h + 1)
 
-    # Create mixed image: clone original, paste patch
+    # Create mixed image
     x_mixed = x.clone()
     x_mixed[:, :, cy:cy + box_h, cx:cx + box_w] = x[idx, :, cy:cy + box_h, cx:cx + box_w]
 
-    # Actual lambda based on box area (not the sampled Beta value)
     lam_actual = 1 - (box_w * box_h) / (W * H)
 
+    logger.debug(f"CutMix: box=({cx},{cy},{cx+box_w},{cy+box_h}), lam={lam_actual:.4f}")
     return x_mixed, y, y[idx], lam_actual
 
 
@@ -93,15 +86,6 @@ def mix_criterion(loss_fn, logits, y_a, y_b, lam):
     The input is a mix of two images, so the correct output is a mix of
     two labels. A single cross-entropy would only work for one label.
     The convex combination properly handles the mixed supervision.
-
-    Args:
-        loss_fn: Loss function (e.g., CrossEntropyLoss)
-        logits: (N, C) model outputs
-        y_a: (N,) first set of labels
-        y_b: (N,) second set of labels
-        lam: mixing weight
-
-    Returns:
-        scalar combined loss
     """
+    logger.debug(f"Computing mixed loss: lam={lam:.4f}")
     return lam * loss_fn(logits, y_a) + (1 - lam) * loss_fn(logits, y_b)

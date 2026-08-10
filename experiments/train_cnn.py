@@ -4,9 +4,10 @@ Generates figures/cnn_curves.png
 Saves model and history with smart fallback.
 """
 import os
-
+import time
 import torch
 from torch import nn
+from loguru import logger
 
 from src.data import get_cifar10_subset, make_loaders, set_seed
 from src.engine import evaluate, fit
@@ -16,18 +17,27 @@ from src.utils import history_exists, load_history, plot_history, save_history
 
 def train_smallcnn():
     """Train SmallCNN and return history."""
+    logger.info("=" * 50)
+    logger.info("B1: Training SmallCNN")
+    logger.info("=" * 50)
+
     STUDENT_ID = 121314
     set_seed(STUDENT_ID)
 
+    start_time = time.time()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     classes = [0, 1, 2, 3, 4]
     batch_size = 64
     epochs = 20
     learning_rate = 1e-3
 
-    # Load data (SmallCNN: 32x32, CIFAR-10 normalization)
+    logger.debug(f"Classes: {classes}, batch_size={batch_size}, epochs={epochs}, lr={learning_rate}")
+
+    # Load data
+    logger.info("Loading CIFAR-10 subset...")
     train_ds, val_ds, test_ds = get_cifar10_subset(
         root="./data",
         classes=classes,
@@ -41,8 +51,10 @@ def train_smallcnn():
     train_loader, val_loader, test_loader = make_loaders(
         train_ds, val_ds, test_ds, batch_size=batch_size
     )
+    logger.info(f"Data loaded: {len(train_loader)} train batches, {len(val_loader)} val batches")
 
     # Create model
+    logger.info("Creating SmallCNN model...")
     model = SmallCNN(num_classes=len(classes)).to(device)
 
     # Setup training
@@ -50,7 +62,6 @@ def train_smallcnn():
     loss_fn = nn.CrossEntropyLoss()
 
     # Train
-    print("\n=== B1: Training SmallCNN ===")
     history = fit(
         model, train_loader, val_loader, epochs,
         optimizer, loss_fn, device, mix=None
@@ -59,7 +70,7 @@ def train_smallcnn():
     # Save model
     os.makedirs("models", exist_ok=True)
     torch.save(model.state_dict(), "models/smallcnn.pth")
-    print("✅ Model saved to models/smallcnn.pth")
+    logger.success("Model saved to models/smallcnn.pth")
 
     # Save history
     save_history(history, "models/smallcnn_history.csv")
@@ -68,9 +79,13 @@ def train_smallcnn():
     plot_history(history, "SmallCNN Training", "figures/cnn_curves.png")
 
     # Evaluate on test set
+    logger.info("Evaluating on test set...")
     test_metrics = evaluate(model, test_loader, loss_fn, device)
-    print(f"\nTest Accuracy: {test_metrics['acc']:.4f}")
-    print(f"Test Loss: {test_metrics['loss']:.4f}")
+    logger.success(f"Test Accuracy: {test_metrics['acc']:.4f}")
+    logger.info(f"Test Loss: {test_metrics['loss']:.4f}")
+
+    elapsed = time.time() - start_time
+    logger.info(f"B1 completed in {elapsed:.1f}s ({elapsed/60:.1f}m)")
 
     return history
 
@@ -82,17 +97,18 @@ def get_smallcnn_history():
     history_path = "models/smallcnn_history.csv"
 
     if history_exists(history_path):
-        print("📂 SmallCNN history found. Loading...")
+        logger.info("📂 SmallCNN history found. Loading...")
         return load_history(history_path)
     else:
-        print("🔨 SmallCNN history not found. Training from scratch...")
+        logger.warning("🔨 SmallCNN history not found. Training from scratch...")
         return train_smallcnn()
 
 
 def main():
     """Main entry point with smart fallback."""
+    logger.info("Starting B1: SmallCNN")
     history = get_smallcnn_history()
-    print(f"\n✅ SmallCNN ready: {len(history['train_loss'])} epochs available")
+    logger.success(f"SmallCNN ready: {len(history['train_loss'])} epochs available")
 
 
 if __name__ == "__main__":

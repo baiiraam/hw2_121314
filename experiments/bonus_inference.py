@@ -3,7 +3,7 @@ Bonus: Inference-only run of pretrained torchvision models.
 Run on 3-5 of your own photos placed in data/samples/.
 """
 import os
-
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -15,20 +15,25 @@ from torchvision.models.detection import (
     keypointrcnn_resnet50_fpn,
     maskrcnn_resnet50_fpn,
 )
+from loguru import logger
 
 
 def load_image(image_path, device):
     """Load and preprocess image for inference."""
+    logger.debug(f"Loading image: {image_path}")
     img = Image.open(image_path).convert("RGB")
     img_original = np.array(img)
     transform = transforms.ToTensor()
     img_tensor = transform(img).to(device)
+    logger.debug(f"Image loaded: {img_original.shape}, tensor: {img_tensor.shape}")
     return img_tensor, img_original
 
 
 def run_detection(image_path, device, score_threshold=0.5):
     """Bonus (a): Faster R-CNN with FPN backbone."""
-    print(f"Running detection on: {image_path}")
+    logger.info(f"Running detection on: {os.path.basename(image_path)}")
+
+    start_time = time.time()
 
     model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
     model.eval()
@@ -71,6 +76,8 @@ def run_detection(image_path, device, score_threshold=0.5):
     labels = labels[valid_indices]
     scores = scores[valid_indices]
 
+    logger.info(f"Found {len(boxes)} detections above threshold {score_threshold}")
+
     _, ax = plt.subplots(1, 1, figsize=(12, 8))
     ax.imshow(img_original)
     ax.set_title(f"Detection: {os.path.basename(image_path)}")
@@ -102,12 +109,16 @@ def run_detection(image_path, device, score_threshold=0.5):
     os.makedirs("figures", exist_ok=True)
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"Saved detection result to {output_path}")
+
+    elapsed = time.time() - start_time
+    logger.success(f"Detection result saved to {output_path} in {elapsed:.2f}s")
 
 
 def run_segmentation(image_path, device, score_threshold=0.5):
     """Bonus (b): Mask R-CNN with instance masks."""
-    print(f"Running segmentation on: {image_path}")
+    logger.info(f"Running segmentation on: {os.path.basename(image_path)}")
+
+    start_time = time.time()
 
     model = maskrcnn_resnet50_fpn(weights="DEFAULT").to(device)
     model.eval()
@@ -129,6 +140,8 @@ def run_segmentation(image_path, device, score_threshold=0.5):
     scores = scores[valid_indices]
     masks = masks[valid_indices]
 
+    logger.info(f"Found {len(boxes)} segmentations above threshold {score_threshold}")
+
     _, ax = plt.subplots(1, 1, figsize=(12, 8))
     ax.imshow(img_original)
     ax.set_title(f"Segmentation: {os.path.basename(image_path)}")
@@ -141,7 +154,7 @@ def run_segmentation(image_path, device, score_threshold=0.5):
 
         mask_binary = mask[0] > 0.5
         mask_overlay = np.zeros_like(img_original, dtype=np.uint8)
-        mask_overlay[mask_binary] = (colors[i] * 255).astype(np.uint8)
+        mask_overlay[mask_binary] = (colors[i][:3] * 255).astype(np.uint8)
 
         ax.imshow(mask_overlay, alpha=0.3)
 
@@ -162,12 +175,16 @@ def run_segmentation(image_path, device, score_threshold=0.5):
     os.makedirs("figures", exist_ok=True)
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"Saved segmentation result to {output_path}")
+
+    elapsed = time.time() - start_time
+    logger.success(f"Segmentation result saved to {output_path} in {elapsed:.2f}s")
 
 
 def run_pose(image_path, device, score_threshold=0.5):
     """Bonus (c): Keypoint R-CNN for human pose estimation."""
-    print(f"Running pose estimation on: {image_path}")
+    logger.info(f"Running pose estimation on: {os.path.basename(image_path)}")
+
+    start_time = time.time()
 
     model = keypointrcnn_resnet50_fpn(weights="DEFAULT").to(device)
     model.eval()
@@ -180,7 +197,7 @@ def run_pose(image_path, device, score_threshold=0.5):
     pred = predictions[0]
 
     if "keypoints" not in pred or len(pred["keypoints"]) == 0:
-        print("No keypoints detected in this image.")
+        logger.warning("No keypoints detected in this image.")
         return
 
     keypoints = pred["keypoints"].cpu().numpy()
@@ -190,12 +207,14 @@ def run_pose(image_path, device, score_threshold=0.5):
     valid_indices = scores >= score_threshold
 
     if not any(valid_indices):
-        print("No valid keypoints above threshold.")
+        logger.warning("No valid keypoints above threshold.")
         return
 
     keypoints = keypoints[valid_indices]
     scores = scores[valid_indices]
     boxes = boxes[valid_indices]
+
+    logger.info(f"Found {len(keypoints)} person(s) with keypoints above threshold {score_threshold}")
 
     skeleton = [
         (0, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 6), (5, 7),
@@ -258,13 +277,19 @@ def run_pose(image_path, device, score_threshold=0.5):
     os.makedirs("figures", exist_ok=True)
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"Saved pose estimation result to {output_path}")
+
+    elapsed = time.time() - start_time
+    logger.success(f"Pose result saved to {output_path} in {elapsed:.2f}s")
 
 
 def main():
     """Run all three models on sample images."""
+    logger.info("=" * 50)
+    logger.info("Bonus: Inference on Sample Images")
+    logger.info("=" * 50)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    logger.info(f"Using device: {device}")
 
     os.makedirs("data/samples", exist_ok=True)
 
@@ -274,12 +299,12 @@ def main():
     ]
 
     if not sample_images:
-        print("No sample images found in data/samples/.")
-        print("Please add 3-5 of your own photos to data/samples/")
+        logger.warning("No sample images found in data/samples/.")
+        logger.info("Please add 3-5 of your own photos to data/samples/")
         return
 
     sample_images = sample_images[:5]
-    print(f"Found {len(sample_images)} sample images")
+    logger.info(f"Found {len(sample_images)} sample images")
 
     for img_file in sample_images:
         img_path = os.path.join("data/samples", img_file)
@@ -287,8 +312,8 @@ def main():
         run_segmentation(img_path, device)
         run_pose(img_path, device)
 
-    print("\nBonus inference complete!")
-    print("Outputs saved to figures/zoo_*.png")
+    logger.success("\nBonus inference complete!")
+    logger.success("Outputs saved to figures/zoo_*.png")
 
 
 if __name__ == "__main__":

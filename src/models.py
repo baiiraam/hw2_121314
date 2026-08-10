@@ -1,11 +1,9 @@
-# =====================================================================
-# FILE: src/models.py
-# =====================================================================
 """
 Model definitions: SmallCNN (custom) and ResNet-18 builder.
 """
 from torch import nn
 from torchvision import models
+from loguru import logger
 
 
 class SmallCNN(nn.Module):
@@ -25,6 +23,7 @@ class SmallCNN(nn.Module):
     """
     def __init__(self, num_classes: int = 5):
         super().__init__()
+        logger.debug(f"Creating SmallCNN with {num_classes} classes")
 
         self.block1 = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -47,19 +46,20 @@ class SmallCNN(nn.Module):
             nn.MaxPool2d(2, stride=2)
         )
 
-        # Global Average Pooling
         self.gap = nn.AdaptiveAvgPool2d(1)
-
-        # Final classifier
         self.fc = nn.Linear(128, num_classes)
 
+        # Log parameter count
+        total_params = sum(p.numel() for p in self.parameters())
+        logger.debug(f"SmallCNN total parameters: {total_params:,}")
+
     def forward(self, x):
-        x = self.block1(x)   # (N, 32, 16, 16)
-        x = self.block2(x)   # (N, 64, 8, 8)
-        x = self.block3(x)   # (N, 128, 4, 4)
-        x = self.gap(x)      # (N, 128, 1, 1)
-        x = x.view(x.size(0), -1)  # (N, 128)
-        x = self.fc(x)       # (N, num_classes)
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.gap(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
         return x
 
 
@@ -78,16 +78,21 @@ def build_resnet18(num_classes: int, mode: str) -> nn.Module:
         - feature_extract: ~2,565 trainable (only the new head)
         - finetune: ~11.2M trainable (entire network)
     """
+    logger.debug(f"Building ResNet-18 with {num_classes} classes, mode={mode}")
+
     model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+    logger.debug("Loaded pretrained ResNet-18 weights")
 
     if mode == "feature_extract":
-        # Freeze all backbone parameters (requires_grad=False)
-        # New head will have requires_grad=True by default
+        logger.debug("Freezing backbone parameters (feature extraction mode)")
         for param in model.parameters():
             param.requires_grad = False
 
-    # Replace final layer for our number of classes
-    # This new layer has requires_grad=True (even in feature_extract mode)
     model.fc = nn.Linear(512, num_classes)
+    logger.debug(f"Replaced fc layer with Linear(512, {num_classes})")
+
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total = sum(p.numel() for p in model.parameters())
+    logger.debug(f"ResNet-18: {trainable:,} trainable params of {total:,} total")
 
     return model
