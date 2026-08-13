@@ -50,18 +50,6 @@ python -m pytest tests/ -v --cov=src --cov-report=term-missing
 
 **Results:** 70 tests passing, 77% coverage.
 
-## Code Quality
-
-```bash
-# Linting
-ruff check --fix .
-
-# Type checking
-ty check src/ tests/
-```
-
-All checks pass.
-
 ## Structure
 
 ```
