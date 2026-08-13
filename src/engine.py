@@ -1,9 +1,12 @@
 """
 Training and evaluation engine for all experiments.
 """
+
 import time
+
 import torch
 from loguru import logger
+
 from src.augment import cutmix_batch, mix_criterion, mixup_batch
 
 
@@ -62,10 +65,7 @@ def train_one_epoch(model, loader, optimizer, loss_fn, device, mix=None):
         if batch_idx % 50 == 0 and batch_idx > 0:
             logger.debug(f"Batch {batch_idx}: loss={loss.item():.4f}")
 
-    return {
-        "loss": total_loss / total,
-        "acc": correct / total
-    }
+    return {"loss": total_loss / total, "acc": correct / total}
 
 
 def evaluate(model, loader, loss_fn, device):
@@ -87,15 +87,13 @@ def evaluate(model, loader, loss_fn, device):
             total_loss += loss.item() * x.size(0)
             total += x.size(0)
 
-    logger.debug(f"Evaluation: loss={total_loss/total:.4f}, acc={correct/total:.4f}")
-    return {
-        "loss": total_loss / total,
-        "acc": correct / total
-    }
+    logger.debug(
+        f"Evaluation: loss={total_loss / total:.4f}, acc={correct / total:.4f}"
+    )
+    return {"loss": total_loss / total, "acc": correct / total}
 
 
-def fit(model, train_loader, val_loader, epochs, optimizer, loss_fn,
-        device, mix=None):
+def fit(model, train_loader, val_loader, epochs, optimizer, loss_fn, device, mix=None):
     """
     Full training loop with history tracking.
 
@@ -105,12 +103,7 @@ def fit(model, train_loader, val_loader, epochs, optimizer, loss_fn,
     mix_name = mix if mix else "none"
     logger.info(f"Starting training for {epochs} epochs with mix={mix_name}")
 
-    history = {
-        "train_loss": [],
-        "train_acc": [],
-        "val_loss": [],
-        "val_acc": []
-    }
+    history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
 
     start_time = time.time()
 
@@ -130,7 +123,7 @@ def fit(model, train_loader, val_loader, epochs, optimizer, loss_fn,
 
         epoch_time = time.time() - epoch_start
         logger.info(
-            f"Epoch {epoch+1}/{epochs}: "
+            f"Epoch {epoch + 1}/{epochs}: "
             f"Train Loss: {train_metrics['loss']:.4f}, "
             f"Train Acc: {train_metrics['acc']:.4f}, "
             f"Val Loss: {val_metrics['loss']:.4f}, "
@@ -139,5 +132,5 @@ def fit(model, train_loader, val_loader, epochs, optimizer, loss_fn,
         )
 
     total_time = time.time() - start_time
-    logger.success(f"Training completed in {total_time:.1f}s ({total_time/60:.1f}m)")
+    logger.success(f"Training completed in {total_time:.1f}s ({total_time / 60:.1f}m)")
     return history

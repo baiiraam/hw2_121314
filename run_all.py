@@ -11,11 +11,12 @@ Usage:
     python run_all.py --verbose    # Show all output (explicit)
     python run_all.py --debug      # Show debug output
 """
-import os
-import sys
-import subprocess
+
 import argparse
 import glob
+import os
+import subprocess
+import sys
 
 # Add project root to Python path before importing local modules
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +32,8 @@ def check_bonus_has_images():
     if not os.path.exists(sample_dir):
         return False
     sample_images = [
-        f for f in os.listdir(sample_dir)
+        f
+        for f in os.listdir(sample_dir)
         if f.lower().endswith((".jpg", ".jpeg", ".png"))
     ]
     return len(sample_images) > 0
@@ -65,7 +67,9 @@ def run_bonus_with_validation(env, verbose_level, logger):
     zoo_files = glob.glob("figures/zoo_*.png")
     if not zoo_files:
         logger.warning("Bonus script ran but produced no output files.")
-        logger.info("Expected: figures/zoo_detection_*.png, zoo_segmentation_*.png, zoo_pose_*.png")
+        logger.info(
+            "Expected: figures/zoo_detection_*.png, zoo_segmentation_*.png, zoo_pose_*.png"
+        )
         return False
 
     logger.success(f"Bonus produced {len(zoo_files)} output file(s):")
@@ -76,23 +80,21 @@ def run_bonus_with_validation(env, verbose_level, logger):
 
 def main():
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(
-        description="Run all HW2 experiments."
-    )
+    parser = argparse.ArgumentParser(description="Run all HW2 experiments.")
     parser.add_argument(
         "--quiet",
         action="store_true",
-        help="Suppress detailed output from experiments (WARNING and above)"
+        help="Suppress detailed output from experiments (WARNING and above)",
     )
     parser.add_argument(
         "--verbose",
         action="store_true",
-        help="Show all output from experiments (INFO and above - default)"
+        help="Show all output from experiments (INFO and above - default)",
     )
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Show debug output from experiments (DEBUG and above)"
+        help="Show debug output from experiments (DEBUG and above)",
     )
     args = parser.parse_args()
 
@@ -132,7 +134,7 @@ def main():
     # ============================================================
     logger.info("=" * 60)
     logger.info("Running HW2 Core Experiments (B1, B2, B3)")
-    logger.info(f"Student ID: 121314")
+    logger.info("Student ID: 121314")
     logger.info(f"Verbose level: {['WARNING', 'INFO', 'DEBUG'][verbose_level]}")
     logger.info("=" * 60)
 

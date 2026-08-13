@@ -1,9 +1,10 @@
 """
 Model definitions: SmallCNN (custom) and ResNet-18 builder.
 """
+
+from loguru import logger
 from torch import nn
 from torchvision import models
-from loguru import logger
 
 
 class SmallCNN(nn.Module):
@@ -21,6 +22,7 @@ class SmallCNN(nn.Module):
 
     Spatial size at GAP input: 4x4 (see Part C1).
     """
+
     def __init__(self, num_classes: int = 5):
         super().__init__()
         logger.debug(f"Creating SmallCNN with {num_classes} classes")
@@ -29,21 +31,21 @@ class SmallCNN(nn.Module):
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, stride=2)
+            nn.MaxPool2d(2, stride=2),
         )
 
         self.block2 = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, stride=2)
+            nn.MaxPool2d(2, stride=2),
         )
 
         self.block3 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, stride=2)
+            nn.MaxPool2d(2, stride=2),
         )
 
         self.gap = nn.AdaptiveAvgPool2d(1)

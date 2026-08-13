@@ -2,17 +2,18 @@
 Data loading and reproducibility utilities for HW2.
 Student ID: 121314 (used as seed)
 """
+
 import os
-import random
 import pickle
 import platform
+import random
 import time
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Subset, Dataset
-from torchvision import datasets, transforms
 from loguru import logger
+from torch.utils.data import DataLoader, Dataset, Subset
+from torchvision import datasets, transforms
 
 
 def set_seed(seed: int) -> None:
@@ -80,10 +81,12 @@ def get_cached_cifar10_224(
     start = time.time()
 
     # Create transform that resizes to 224x224 but DOES NOT normalize yet
-    resize_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-    ])
+    resize_transform = transforms.Compose(
+        [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+        ]
+    )
 
     # Load full CIFAR-10 with resize only (no normalization)
     logger.debug("Loading CIFAR-10 dataset for cache creation")
@@ -102,7 +105,9 @@ def get_cached_cifar10_224(
     train_filtered = filter_by_class(full_train, classes)
     test_filtered = filter_by_class(full_test, classes)
 
-    logger.debug(f"Filtered to classes {classes}: {len(train_filtered)} train, {len(test_filtered)} test")
+    logger.debug(
+        f"Filtered to classes {classes}: {len(train_filtered)} train, {len(test_filtered)} test"
+    )
 
     # Group indices by class for stratified sampling
     def group_by_class(subset):
@@ -127,8 +132,7 @@ def get_cached_cifar10_224(
     # Split train pool into train (640) and val (160) per class
     train_pool_by_class = {}
     for c in classes:
-        class_indices = [idx for idx in train_selected
-                         if train_filtered[idx][1] == c]
+        class_indices = [idx for idx in train_selected if train_filtered[idx][1] == c]
         rng.shuffle(class_indices)
         train_pool_by_class[c] = class_indices
 
@@ -151,7 +155,9 @@ def get_cached_cifar10_224(
         test_indices.extend(indices[:n_test_per_class])
 
     # Create datasets (stored as lists of (tensor, label) for caching)
-    train_data = [(train_filtered[idx][0], train_filtered[idx][1]) for idx in train_indices]
+    train_data = [
+        (train_filtered[idx][0], train_filtered[idx][1]) for idx in train_indices
+    ]
     val_data = [(train_filtered[idx][0], train_filtered[idx][1]) for idx in val_indices]
     test_data = [(test_filtered[idx][0], test_filtered[idx][1]) for idx in test_indices]
 
@@ -162,8 +168,12 @@ def get_cached_cifar10_224(
     elapsed = time.time() - start
     logger.success(f"✅ Cache saved to {cache_file} in {elapsed:.2f}s")
     logger.debug(f"Cache file size: {get_file_size(cache_file)}")
-    logger.info(f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}")
-    logger.info(f"Per class: {train_size_per_class} train, {val_size_per_class} val, {n_test_per_class} test")
+    logger.info(
+        f"Train: {len(train_data)}, Val: {len(val_data)}, Test: {len(test_data)}"
+    )
+    logger.info(
+        f"Per class: {train_size_per_class} train, {val_size_per_class} val, {n_test_per_class} test"
+    )
     logger.debug("Exiting get_cached_cifar10_224()")
     return train_data, val_data, test_data
 
@@ -179,8 +189,8 @@ class CachedCIFAR10Dataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx):
-        img_tensor, label = self.data[idx]
+    def __getitem__(self, index):
+        img_tensor, label = self.data[index]
         img_tensor = self.normalize_transform(img_tensor)
         return img_tensor, label
 
@@ -199,7 +209,9 @@ def get_cifar10_subset(
     Uses caching for 224x224 images to avoid repeated resizing.
     """
     logger.debug("Entering get_cifar10_subset()")
-    logger.debug(f"Parameters: image_size={image_size}, imagenet_norm={imagenet_norm}, seed={seed}")
+    logger.debug(
+        f"Parameters: image_size={image_size}, imagenet_norm={imagenet_norm}, seed={seed}"
+    )
 
     # ImageNet stats (used for ResNet - Problem 6a)
     imagenet_mean = (0.485, 0.456, 0.406)
@@ -222,10 +234,12 @@ def get_cifar10_subset(
     # For SmallCNN (image_size=32), don't use cache (small images, fast)
     if image_size == 32:
         logger.debug("Using direct loading (image_size=32, no cache)")
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            normalize_transform,
-        ])
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                normalize_transform,
+            ]
+        )
 
         full_train = datasets.CIFAR10(
             root=root, train=True, download=True, transform=transform
@@ -264,8 +278,9 @@ def get_cifar10_subset(
         # Split train pool into train (640) and val (160) per class
         train_pool_by_class = {}
         for c in classes:
-            class_indices = [idx for idx in train_selected
-                             if train_filtered[idx][1] == c]
+            class_indices = [
+                idx for idx in train_selected if train_filtered[idx][1] == c
+            ]
             rng.shuffle(class_indices)
             train_pool_by_class[c] = class_indices
 
@@ -292,8 +307,12 @@ def get_cifar10_subset(
         val_dataset = Subset(train_filtered, val_indices)
         test_dataset = Subset(test_filtered, test_indices)
 
-        logger.info(f"Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
-        logger.info(f"Per class: {train_size_per_class} train, {val_size_per_class} val, {n_test_per_class} test")
+        logger.info(
+            f"Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}"
+        )
+        logger.info(
+            f"Per class: {train_size_per_class} train, {val_size_per_class} val, {n_test_per_class} test"
+        )
         logger.debug("Exiting get_cifar10_subset()")
 
         return train_dataset, val_dataset, test_dataset
@@ -349,7 +368,9 @@ def make_loaders(train_ds, val_ds, test_ds, batch_size: int):
         worker_init_fn=worker_init_fn if num_workers > 0 else None,
     )
 
-    logger.debug(f"Created DataLoaders: train={len(train_loader)} batches, "
-                 f"val={len(val_loader)} batches, test={len(test_loader)} batches")
+    logger.debug(
+        f"Created DataLoaders: train={len(train_loader)} batches, "
+        f"val={len(val_loader)} batches, test={len(test_loader)} batches"
+    )
     logger.debug("Exiting make_loaders()")
     return train_loader, val_loader, test_loader

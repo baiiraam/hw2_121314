@@ -2,6 +2,7 @@
 Custom implementations of Mixup and CutMix augmentation.
 No external libraries used - self-implemented per assignment rules.
 """
+
 import numpy as np
 import torch
 from loguru import logger
@@ -70,11 +71,15 @@ def cutmix_batch(x, y, alpha: float = 1.0):
 
     # Create mixed image
     x_mixed = x.clone()
-    x_mixed[:, :, cy:cy + box_h, cx:cx + box_w] = x[idx, :, cy:cy + box_h, cx:cx + box_w]
+    x_mixed[:, :, cy : cy + box_h, cx : cx + box_w] = x[
+        idx, :, cy : cy + box_h, cx : cx + box_w
+    ]
 
     lam_actual = 1 - (box_w * box_h) / (W * H)
 
-    logger.debug(f"CutMix: box=({cx},{cy},{cx+box_w},{cy+box_h}), lam={lam_actual:.4f}")
+    logger.debug(
+        f"CutMix: box=({cx},{cy},{cx + box_w},{cy + box_h}), lam={lam_actual:.4f}"
+    )
     return x_mixed, y, y[idx], lam_actual
 
 

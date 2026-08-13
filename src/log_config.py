@@ -2,8 +2,10 @@
 Logging configuration using loguru.
 Provides colored console output and file logging with rotation.
 """
+
 import sys
 from pathlib import Path
+
 from loguru import logger
 
 
