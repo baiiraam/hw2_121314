@@ -1,0 +1,52 @@
+2026-08-16 13:37:03 | DEBUG    | src.log_config:setup_logging:61 - Logging configured: console=INFO, file=DEBUG
+2026-08-16 13:37:03 | INFO     | __main__:main:135 - ============================================================
+2026-08-16 13:37:03 | INFO     | __main__:main:136 - Running HW2 Core Experiments (B1, B2, B3)
+2026-08-16 13:37:03 | INFO     | __main__:main:137 - Student ID: 121314
+2026-08-16 13:37:03 | INFO     | __main__:main:138 - Verbose level: INFO
+2026-08-16 13:37:03 | INFO     | __main__:main:139 - ============================================================
+2026-08-16 13:37:03 | INFO     | __main__:main:142 - 
+>>> B1: SmallCNN (experiments/train_cnn.py)
+2026-08-16 13:37:03 | INFO     | __main__:main:143 - ----------------------------------------
+2026-08-16 14:02:50 | SUCCESS  | __main__:main:158 - B1: SmallCNN completed successfully
+2026-08-16 14:02:50 | INFO     | __main__:main:142 - 
+>>> B2: Transfer Learning (experiments/transfer_compare.py)
+2026-08-16 14:02:50 | INFO     | __main__:main:143 - ----------------------------------------
+2026-08-16 14:10:55 | SUCCESS  | __main__:main:158 - B2: Transfer Learning completed successfully
+2026-08-16 14:10:55 | INFO     | __main__:main:142 - 
+>>> B3: Augmentation Study (experiments/augment_compare.py)
+2026-08-16 14:10:55 | INFO     | __main__:main:143 - ----------------------------------------
+2026-08-16 14:26:35 | SUCCESS  | __main__:main:158 - B3: Augmentation Study completed successfully
+2026-08-16 14:26:35 | INFO     | __main__:main:163 - 
+============================================================
+2026-08-16 14:26:35 | INFO     | __main__:main:164 - >>> Bonus: Inference
+2026-08-16 14:26:35 | INFO     | __main__:main:165 - ----------------------------------------
+2026-08-16 14:27:37 | SUCCESS  | __main__:run_bonus_with_validation:75 - Bonus produced 15 output file(s):
+2026-08-16 14:27:37 | INFO     | __main__:run_bonus_with_validation:77 -   - figures/zoo_segmentation_manset-akasya-duragi.png
+2026-08-16 14:27:37 | INFO     | __main__:run_bonus_with_validation:77 -   - figures/zoo_detection_manset-akasya-duragi.png
+2026-08-16 14:27:37 | INFO     | __main__:run_bonus_with_validation:77 -   - figures/zoo_detection_download.png
+2026-08-16 14:27:37 | INFO     | __main__:run_bonus_with_validation:77 -   - figures/zoo_detection_WhatsApp Image 2026-08-14 at 02.png
+2026-08-16 14:27:37 | INFO     | __main__:run_bonus_with_validation:77 -   - figures/zoo_segmentation_WhatsApp Image 2026-08-14 at 02.png
+2026-08-16 14:27:37 | SUCCESS  | __main__:main:170 - Bonus completed successfully!
+2026-08-16 14:27:37 | INFO     | __main__:main:177 - 
+============================================================
+2026-08-16 14:27:37 | SUCCESS  | __main__:main:178 - All core experiments complete!
+2026-08-16 14:27:37 | INFO     | __main__:main:182 - Generated 18 figure(s):
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/augment_compare.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/cnn_curves.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/transfer_compare.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_detection_WhatsApp Image 2026-08-14 at 01.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_detection_WhatsApp Image 2026-08-14 at 02.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_detection_download.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_detection_images.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_detection_manset-akasya-duragi.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_pose_WhatsApp Image 2026-08-14 at 01.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_pose_WhatsApp Image 2026-08-14 at 02.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_pose_download.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_pose_images.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_pose_manset-akasya-duragi.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_segmentation_WhatsApp Image 2026-08-14 at 01.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_segmentation_WhatsApp Image 2026-08-14 at 02.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_segmentation_download.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_segmentation_images.png
+2026-08-16 14:27:37 | INFO     | __main__:main:184 -   - figures/zoo_segmentation_manset-akasya-duragi.png
+2026-08-16 14:27:37 | INFO     | __main__:main:186 - ============================================================
