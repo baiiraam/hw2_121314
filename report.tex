@@ -273,6 +273,25 @@ gentle adaptation without catastrophic forgetting.
 % =====================================================================
 \section{Experimental Setup}\label{sec:setup}
 
+\subsection{Hyperparameters}
+\begin{table}[t]
+\caption{Training hyperparameters}
+\centering
+\begin{tabular}{ll}
+\toprule
+Parameter & Value \\
+\midrule
+Batch size & 64 \\
+Epochs & 20 \\
+Optimizer & Adam \\
+SmallCNN LR & $10^{-3}$ \\
+Feature extraction LR & $10^{-3}$ \\
+Fine-tuning LR & $10^{-4}$ \\
+Mixup $\alpha$ & 1.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Data}
 I used a CIFAR-10 subset with 5 classes (airplane, automobile, bird, cat, deer),
 with 800 train and 200 test images per class, seeded by Student ID 121314. A
@@ -468,9 +487,9 @@ for param in model.parameters():
     param.requires_grad = False
 \end{lstlisting}
 This freezes all ResNet-18 backbone parameters. The new `model.fc` layer is
-created after this loop, so it has `requires_grad=True` by default.
+created after this loop, so it has `requires\_grad=True` by default.
 
-Parameter counts (from `count_trainable_params()`):
+Parameter counts (from `count\_trainable\_params()`):
 - Feature extraction: 2,565 (only the new Linear(512, 5) head)
 - Fine-tuning: 11,179,077 (entire network)
 
@@ -495,32 +514,50 @@ handles the mixed supervision since the input is a mix of two images.
 
 \subsection{A pitfall you hit (C4)}
 
-The most significant bug was in B3's test evaluation. Originally, I used
-`load_base_model()` to load the B2 checkpoint for all three regimes,
+I encountered two significant bugs during development.
+
+First, the most critical bug was in B3's test evaluation. Originally, I used
+`load\_base\_model()` to load the B2 checkpoint for all three regimes,
 resulting in identical test accuracies (0.9370, 0.9370, 0.9370). The fix was
-to save each regime's trained model to `augment_{regime}.pth` and load them
-with `load_regime_model(regime, device)` instead of the shared B2 base model.
+to save each regime's trained model to `augment\_{regime}.pth` and load them
+with `load\_regime\_model(regime, device)` instead of the shared B2 base model.
 After the fix, test accuracies differed (0.9400, 0.9170, 0.9340).
+
+Second, I encountered a device mismatch bug when moving from Colab (GPU) to
+my local machine (CPU). Models saved on GPU could not be loaded on CPU:
+\begin{lstlisting}
+RuntimeError: Attempting to deserialize object on a CUDA device but
+torch.cuda.is_available() is False.
+\end{lstlisting}
+The fix was to add `map\_location=device` to all `torch.load()` calls:
+\begin{lstlisting}
+model.load_state_dict(torch.load("model.pth", map_location=device))
+\end{lstlisting}
+This made the code device-agnostic, allowing checkpoints to be loaded on
+both GPU and CPU environments without modification.
 
 \subsection{Reproducibility (C5)}
 
-My Student ID is 121314. The seed flows through:
-1. **Data split:** `np.random.RandomState(seed)` controls shuffling and
+My Student ID is set to 121314 (just a number for the seed in this case). The seed flows through:
+\newline
+1. Data split: `np.random.RandomState(seed)` controls shuffling and
    stratified sampling.
-2. **Weight initialization:** PyTorch's default initialization is
-   deterministic when `torch.manual_seed(seed)` is set.
-3. **DataLoader shuffling:** Uses PyTorch's RNG, seeded via
-   `torch.manual_seed(seed)`.
-4. **CUDA:** `torch.cuda.manual_seed_all(seed)` ensures GPU determinism.
+\newline
+2. Weight initialization: PyTorch's default initialization is
+   deterministic when `torch.manual\_seed(seed)` is set.
+\newline
+3. DataLoader shuffling: Uses PyTorch's RNG, seeded via
+   `torch.manual\_seed(seed)`.
+\newline
+4. CUDA: `torch.cuda.manual\_seed\_all(seed)` ensures GPU determinism.
 
-Running `python run_all.py` twice produces identical figures.
+Running `python run\_all.py` twice with the same seed produces identical figures.
 
 % =====================================================================
 \section{Pretrained-Model Inference (Bonus)}
 
-I ran pretrained torchvision models on 3 photos of soccer players (Ngolo Kante,
-Thomas Muller, and a match scene). The annotated outputs are saved as
-`figures/zoo_*.png`.
+I ran pretrained torchvision models on 5 photos, including soccer players, my photos, and downloaded images. The annotated outputs are saved as
+`figures/zoo\_*.png`.
 
 \textbf{Detection (Faster R-CNN with FPN):}
 FPN (Feature Pyramid Network) uses a top-down pathway with lateral connections
