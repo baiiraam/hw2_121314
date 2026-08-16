@@ -1,7 +1,3 @@
-Let me fix the Mermaid syntax errors. Here are the corrected diagrams:
-
----
-
 ## 1. Overall Project Architecture
 
 ```mermaid
