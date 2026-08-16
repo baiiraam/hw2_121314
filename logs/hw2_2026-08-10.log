@@ -1,0 +1,48 @@
+2026-08-10 04:40:51 | DEBUG    | src.log_config:setup_logging:59 - Logging configured: console=INFO, file=DEBUG
+2026-08-10 04:40:51 | INFO     | __main__:main:76 - ============================================================
+2026-08-10 04:40:51 | INFO     | __main__:main:77 - Running all HW2 experiments
+2026-08-10 04:40:51 | INFO     | __main__:main:78 - Student ID: 121314
+2026-08-10 04:40:51 | INFO     | __main__:main:79 - Verbose level: INFO
+2026-08-10 04:40:51 | INFO     | __main__:main:80 - ============================================================
+2026-08-10 04:40:51 | INFO     | __main__:main:83 - 
+>>> B1: SmallCNN (experiments/train_cnn.py)
+2026-08-10 04:40:51 | INFO     | __main__:main:84 - ----------------------------------------
+2026-08-10 04:41:02 | SUCCESS  | __main__:main:103 - B1: SmallCNN completed successfully
+2026-08-10 04:41:02 | INFO     | __main__:main:83 - 
+>>> B2: Transfer Learning (experiments/transfer_compare.py)
+2026-08-10 04:41:02 | INFO     | __main__:main:84 - ----------------------------------------
+2026-08-10 04:45:20 | SUCCESS  | __main__:main:103 - B2: Transfer Learning completed successfully
+2026-08-10 04:45:20 | INFO     | __main__:main:83 - 
+>>> B3: Augmentation Study (experiments/augment_compare.py)
+2026-08-10 04:45:20 | INFO     | __main__:main:84 - ----------------------------------------
+2026-08-10 04:51:20 | SUCCESS  | __main__:main:103 - B3: Augmentation Study completed successfully
+2026-08-10 04:51:20 | INFO     | __main__:main:83 - 
+>>> Bonus: Inference (experiments/bonus_inference.py)
+2026-08-10 04:51:20 | INFO     | __main__:main:84 - ----------------------------------------
+2026-08-10 04:51:34 | SUCCESS  | __main__:main:103 - Bonus: Inference completed successfully
+2026-08-10 04:51:34 | INFO     | __main__:main:105 - 
+============================================================
+2026-08-10 04:51:34 | SUCCESS  | __main__:main:106 - All experiments complete!
+2026-08-10 04:51:34 | INFO     | __main__:main:107 - Generated figures:
+2026-08-10 04:51:34 | INFO     | __main__:main:108 -   - figures/cnn_curves.png
+2026-08-10 04:51:34 | INFO     | __main__:main:109 -   - figures/transfer_compare.png
+2026-08-10 04:51:34 | INFO     | __main__:main:110 -   - figures/augment_compare.png
+2026-08-10 04:51:34 | INFO     | __main__:main:111 -   - figures/zoo_*.png (bonus)
+2026-08-10 04:51:34 | INFO     | __main__:main:112 - ============================================================
+2026-08-10 05:01:03 | DEBUG    | src.log_config:setup_logging:59 - Logging configured: console=INFO, file=DEBUG
+2026-08-10 05:01:03 | INFO     | __main__:main:133 - ============================================================
+2026-08-10 05:01:03 | INFO     | __main__:main:134 - Running HW2 Core Experiments (B1, B2, B3)
+2026-08-10 05:01:03 | INFO     | __main__:main:135 - Student ID: 121314
+2026-08-10 05:01:03 | INFO     | __main__:main:136 - Verbose level: INFO
+2026-08-10 05:01:03 | INFO     | __main__:main:137 - ============================================================
+2026-08-10 05:01:03 | INFO     | __main__:main:140 - 
+>>> B1: SmallCNN (experiments/train_cnn.py)
+2026-08-10 05:01:03 | INFO     | __main__:main:141 - ----------------------------------------
+2026-08-10 05:01:11 | SUCCESS  | __main__:main:156 - B1: SmallCNN completed successfully
+2026-08-10 05:01:11 | INFO     | __main__:main:140 - 
+>>> B2: Transfer Learning (experiments/transfer_compare.py)
+2026-08-10 05:01:11 | INFO     | __main__:main:141 - ----------------------------------------
+2026-08-10 05:01:46 | SUCCESS  | __main__:main:156 - B2: Transfer Learning completed successfully
+2026-08-10 05:01:46 | INFO     | __main__:main:140 - 
+>>> B3: Augmentation Study (experiments/augment_compare.py)
+2026-08-10 05:01:46 | INFO     | __main__:main:141 - ----------------------------------------
